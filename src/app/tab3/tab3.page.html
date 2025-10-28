@@ -1,167 +1,17 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-title>
-      ℹ️ Acerca de
+      Tab 3
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Acerca de</ion-title>
+      <ion-title size="large">Tab 3</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div class="about-container">
-    <ion-card>
-      <ion-card-header>
-        <div class="app-logo">
-          <ion-icon name="camera" color="primary"></ion-icon>
-        </div>
-        <ion-card-title>MediaTagger</ion-card-title>
-        <ion-card-subtitle>Organizador de Fotos Inteligente</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <p>
-          MediaTagger es una aplicación móvil desarrollada con Ionic y Angular que te permite
-          capturar, organizar y gestionar tus fotos de manera eficiente usando un sistema de etiquetas.
-        </p>
-        <div class="version-info">
-          <ion-chip color="primary">
-            <ion-icon name="code-outline"></ion-icon>
-            <ion-label>Versión {{ appVersion }}</ion-label>
-          </ion-chip>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="star-outline"></ion-icon>
-          Características
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list lines="none">
-          <ion-item *ngFor="let feature of features">
-            <ion-icon [name]="feature.icon" slot="start" [color]="feature.color"></ion-icon>
-            <ion-label>
-              <h3>{{ feature.title }}</h3>
-              <p>{{ feature.description }}</p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="code-slash-outline"></ion-icon>
-          Tecnologías
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="tech-grid">
-          <ion-chip *ngFor="let tech of technologies" [color]="tech.color" class="tech-chip">
-            <ion-icon [name]="tech.icon"></ion-icon>
-            <ion-label>{{ tech.name }}</ion-label>
-          </ion-chip>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="school-outline"></ion-icon>
-          Proyecto Académico
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>
-          Este proyecto fue desarrollado como parte del curso de 
-          <strong>Énfasis en Programación Móvil</strong> del Politécnico Grancolombiano.
-        </p>
-        <div class="institution-info">
-          <ion-chip color="secondary">
-            <ion-icon name="school"></ion-icon>
-            <ion-label>Politécnico Grancolombiano</ion-label>
-          </ion-chip>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="information-circle-outline"></ion-icon>
-          Información del Sistema
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list lines="none">
-          <ion-item>
-            <ion-icon name="hardware-chip-outline" slot="start" color="medium"></ion-icon>
-            <ion-label>
-              <h3>Plataforma</h3>
-              <p>{{ deviceInfo.platform || 'Web' }}</p>
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-icon name="phone-portrait-outline" slot="start" color="medium"></ion-icon>
-            <ion-label>
-              <h3>Modelo</h3>
-              <p>{{ deviceInfo.model || 'Navegador Web' }}</p>
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-icon name="albums-outline" slot="start" color="medium"></ion-icon>
-            <ion-label>
-              <h3>Fotos almacenadas</h3>
-              <p>{{ stats.totalPhotos }} {{ stats.totalPhotos === 1 ? 'foto' : 'fotos' }}</p>
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-icon name="pricetags-outline" slot="start" color="medium"></ion-icon>
-            <ion-label>
-              <h3>Etiquetas creadas</h3>
-              <p>{{ stats.totalTags }} {{ stats.totalTags === 1 ? 'etiqueta' : 'etiquetas' }}</p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Botones de acción -->
-    <div class="action-buttons">
-      <ion-button expand="block" fill="outline" (click)="openPrivacyInfo()">
-        <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
-        Privacidad y Datos
-      </ion-button>
-      
-      <ion-button expand="block" fill="outline" (click)="openHelp()">
-        <ion-icon name="help-circle-outline" slot="start"></ion-icon>
-        Ayuda y Soporte
-      </ion-button>
-      
-      <ion-button expand="block" fill="outline" (click)="clearAllData()" color="danger">
-        <ion-icon name="trash-outline" slot="start"></ion-icon>
-        Limpiar Todos los Datos
-      </ion-button>
-    </div>
-
-    <!-- Footer con información adicional -->
-    <div class="footer-info">
-      <p>
-        <ion-icon name="heart" color="danger"></ion-icon>
-        Desarrollado con amor para el aprendizaje
-      </p>
-      <p class="copyright">
-        © 2024 MediaTagger - Todos los derechos reservados
-      </p>
-    </div>
-  </div>
+  <app-explore-container name="Tab 3 page"></app-explore-container>
 </ion-content>
