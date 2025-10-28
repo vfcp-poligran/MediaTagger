@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Desarrollo de MediaTagger con Ionic</title>
+    
+    <!-- Fuentes (Google Font Inter) --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Iconos (Ionicons) --><script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@7/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@7/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        :root {
+            --ionic-blue: #3880ff;
+            --ionic-green: #2dd36f;
+            --ionic-red: #eb445a;
+            --ionic-yellow: #ffc409;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fc; /* Ligeramente más oscuro para contraste */
+            --text-primary: #222;
+            --text-secondary: #555;
+            --border-color: #e6e9ef; /* Borde más suave */
+            --code-bg: #282c34;
+            --code-text: #abb2bf;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Sombra suave */
+            --card-radius: 12px; /* Bordes más redondeados */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            /* Fuente mejorada */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.7; /* Mayor interlineado para legibilidad */
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 25px auto; /* Espacio arriba/abajo */
+            background: var(--bg-primary);
+            /* Sombra más sutil y elevada */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+            border-radius: var(--card-radius);
+            overflow: hidden; /* Para contener los bordes redondeados */
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--ionic-blue) 0%, #5a9eff 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 4px solid var(--ionic-green);
+        }
+
+        header h1 {
+            font-size: 3em; /* Ligeramente más grande */
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header .subtitle {
+            font-size: 1.4em;
+            font-weight: 300;
+            opacity: 0.95;
+        }
+
+        header .version-badge {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.2); /* Integrado con el header */
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 15px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Navigation */
+        nav {
+            /* Efecto "Glassmorphism" */
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            
+            padding: 0;
+            border-bottom: 1px solid var(--border-color); /* Borde más fino */
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0;
+        }
+
+        nav a {
+            display: block;
+            padding: 18px 24px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover,
+        nav a.active { /* Clase activa para JS */
+            background: rgba(56, 128, 255, 0.05);
+            color: var(--ionic-blue);
+            border-bottom-color: var(--ionic-blue);
+        }
+
+        /* Content */
+        .content {
+            padding: 40px;
+            /* Límite de ancho para legibilidad */
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        section {
+            margin-bottom: 60px; /* Más espacio entre secciones */
+            /* ID de anclaje para el scroll */
+            scroll-margin-top: 80px; /* Ajustar por la altura del nav sticky */
+        }
+
+        h2 {
+            color: var(--ionic-blue);
+            font-size: 2.3em;
+            font-weight: 600;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            /* Para alinear el ionicon */
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        h2 ion-icon {
+            font-size: 1.1em;
+            margin-bottom: -4px; /* Ajuste visual */
+        }
+
+        h3 {
+            color: #111;
+            font-size: 1.7em;
+            font-weight: 600;
+            margin: 35px 0 20px 0;
+            padding-left: 15px;
+            border-left: 4px solid var(--ionic-green);
+        }
+
+        h4 {
+            color: var(--text-primary);
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 25px 0 10px 0;
+        }
+
+        p {
+            margin-bottom: 18px;
+            font-size: 1.1em;
+            color: var(--text-secondary);
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: var(--card-radius);
+            border-left: 6px solid; /* Borde de acento más grueso */
+            box-shadow: var(--card-shadow);
+        }
+
+        .alert-info {
+            background: #e7f3ff;
+            border-left-color: var(--ionic-blue);
+            color: #004085;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-left-color: var(--ionic-green);
+            color: #155724;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left-color: var(--ionic-yellow);
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border-left-color: var(--ionic-red);
+            color: #721c24;
+        }
+
+        .alert-title {
+            font-weight: 700;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Code Blocks */
+        .terminal {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: var(--card-radius);
+            margin: 25px 0;
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            overflow-x: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .terminal::before {
+            content: "Terminal";
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 5px 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #3e4451;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: var(--ionic-red); }
+        .terminal-dot.yellow { background: var(--ionic-yellow); }
+        .terminal-dot.green { background: var(--ionic-green); }
+
+        .command {
+            display: block;
+            margin: 10px 0;
+        }
+
+        .command-prompt {
+            color: var(--ionic-green);
+            font-weight: bold;
+        }
+
+        .command-input {
+            color: #61afef;
+        }
+
+        .command-comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .command-output {
+            color: #98c379;
+            margin-left: 0;
+            opacity: 0.9;
+        }
+
+        .code-inline {
+            background: #f1f3f5;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: "Consolas", "Monaco", monospace;
+            color: var(--ionic-red);
+            font-size: 0.95em;
+            border: 1px solid var(--border-color);
+        }
+
+        /* File Tree */
+        .file-tree {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: var(--card-radius);
+            border: 1px solid var(--border-color);
+            margin: 20px 0;
+            font-family: "Consolas", "Monaco", monospace;
+        }
+
+        .file-tree ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .file-tree li {
+            padding: 5px 0;
+            position: relative;
+        }
+
+        .file-tree li::before {
+            content: "├─ ";
+            position: absolute;
+            left: -20px;
+            color: var(--text-secondary);
+        }
+
+        .file-tree li:last-child::before {
+            content: "└─ ";
+        }
+
+        .folder::before {
+            content: "📁 ";
+        }
+
+        .file::before {
+            content: "📄 ";
+        }
+
+        /* New: Project Structure Visualizer */
+        .project-structure-visualizer {
+            background: linear-gradient(145deg, #e0e5ec, #ffffff);
+            border: 1px solid #d1d9e6;
+            border-radius: var(--card-radius);
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.08), -5px -5px 15px rgba(255, 255, 255, 0.9);
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .project-structure-visualizer .root-folder {
+            font-weight: bold;
+            color: var(--ionic-blue);
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .project-structure-visualizer ul {
+            list-style: none;
+            padding-left: 25px;
+            margin: 0;
+        }
+
+        .project-structure-visualizer li {
+            position: relative;
+            padding: 3px 0;
+            margin: 0;
+        }
+
+        .project-structure-visualizer li::before {
+            content: ' ';
+            position: absolute;
+            left: -18px;
+            top: 0;
+            width: 16px;
+            height: 100%;
+            border-left: 1px dashed #a0a0a0;
+        }
+
+        .project-structure-visualizer li:last-child::before {
+            height: 15px; /* Ajusta la altura de la línea para el último elemento */
+        }
+
+        .project-structure-visualizer li:first-child::before {
+            top: 15px; /* Empieza la línea más abajo para el primer elemento */
+        }
+
+        .project-structure-visualizer li::after {
+            content: '── ';
+            position: absolute;
+            left: -12px;
+            top: 5px;
+            color: #a0a0a0;
+        }
+        
+        .project-structure-visualizer .folder-icon,
+        .project-structure-visualizer .file-icon {
+            margin-right: 8px;
+            color: var(--ionic-blue); /* Color para iconos de carpeta */
+        }
+
+        .project-structure-visualizer .file-icon {
+            color: var(--ionic-green); /* Color para iconos de archivo */
+        }
+
+        .project-structure-visualizer .comment {
+            color: #888;
+            font-style: italic;
+            margin-left: 10px;
+            font-size: 0.9em;
+        }
+
+        /* Code Snippet */
+        .code-snippet {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            margin: 25px 0;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .code-header {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 12px 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-body {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .code-body pre {
+            margin: 0;
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            box-shadow: var(--card-shadow);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+        }
+
+        thead {
+            background: var(--ionic-blue);
+            color: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Lists */
+        /* Estilos redefinidos para listas dentro de secciones */
+        .content ul, .content ol {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+
+        .content li {
+            margin: 10px 0;
+            font-size: 1.1em;
+            color: var(--text-secondary);
+        }
+
+        /* Anulación específica para el visualizador de estructura */
+        .project-structure-visualizer ul,
+        .project-structure-visualizer li {
+            margin: 0;
+            padding: 3px 0;
+            font-size: 1em; /* Ajusta si es necesario */
+            color: #333;
+        }
+        .project-structure-visualizer ul {
+             padding-left: 25px;
+        }
+
+
+        /* Steps */
+        .steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            position: relative;
+            padding: 20px 20px 20px 70px; /* Padding ajustado */
+            margin: 25px 0;
+            background: #fdfdfd;
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            box-shadow: var(--card-shadow);
+            font-size: 1.1em; /* Asegura consistencia */
+            color: var(--text-secondary); /* Asegura consistencia */
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            /* Degradado y sombra para el contador */
+            background: linear-gradient(135deg, var(--ionic-blue), #5a9eff);
+            box-shadow: 0 2px 6px rgba(56, 128, 255, 0.4);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* VSCode Section */
+        .vscode-window {
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            margin: 25px 0;
+            box-shadow: var(--card-shadow);
+        }
+
+        .vscode-titlebar {
+            background: #323233;
+            color: #cccccc;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vscode-sidebar {
+            background: #252526;
+            color: #cccccc;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .vscode-content {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.95em;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 40px;
+            text-align: center;
+            margin-top: 50px;
+            border-top: 4px solid var(--ionic-blue);
+        }
+        
+        footer p {
+            color: var(--code-text);
+            font-size: 1em;
+            margin-bottom: 0; /* Anula el margen de p general */
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            nav a {
+                border-bottom: none;
+                border-left: 3px solid transparent;
+            }
+
+            nav a:hover,
+            nav a.active {
+                border-left-color: var(--ionic-blue);
+                border-bottom-color: transparent;
+            }
+
+            h2 {
+                font-size: 1.8em;
+            }
+
+            h3 {
+                font-size: 1.4em;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        section {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header --><header>
+            <h1>🚀 Guía Completa: MediaTagger</h1>
+            <p class="subtitle">Desarrollo de Aplicación Móvil Multiplataforma con Ionic</p>
+            <span class="version-badge">Ionic 7 + Angular 17 + Capacitor 5</span>
+        </header>
+
+        <!-- Navigation --><nav>
+            <ul>
+                <li><a href="#introduccion" class="active">Introducción</a></li>
+                <li><a href="#teoria">Teoría</a></li> <!-- NUEVO -->
+                <li><a href="#requisitos">Requisitos</a></li>
+                <li><a href="#configuracion">Configuración</a></li>
+                <li><a href="#estructura">Estructura</a></li>
+                <li><a href="#desarrollo">Desarrollo</a></li>
+                <li><a href="#pruebas">Pruebas</a></li>
+                <li><a href="#recursos">Recursos</a></li> <!-- NUEVO -->
+            </ul>
+        </nav>
+
+        <!-- Content --><div class="content">
+            <!-- Introducción --><section id="introduccion">
+                <h2><ion-icon name="phone-portrait-outline"></ion-icon> Introducción a MediaTagger</h2>
+                
+                <p><strong>MediaTagger</strong> es una aplicación móvil multiplataforma que permite a los usuarios capturar fotos, organizarlas mediante etiquetas personalizadas y gestionar una galería inteligente de imágenes.</p>
+
+                <div class="alert alert-info">
+                    <div class="alert-title">💡 Características Principales</div>
+                    <ul>
+                        <li>📸 Captura de fotos usando la cámara del dispositivo</li>
+                        <li>🏷️ Sistema de etiquetado flexible y personalizable</li>
+                        <li>🖼️ Galería visual con filtrado por etiquetas</li>
+                        <li>📱 Interfaz responsive para móvil y web</li>
+                        <li>💾 Almacenamiento local de imágenes y metadatos</li>
+                        <li>🔍 Búsqueda y filtrado avanzado</li>
+                    </ul>
+                </div>
+
+                <h3>🎯 Objetivos del Proyecto</h3>
+                <ol>
+                    <li>Implementar una aplicación híbrida con Ionic Framework</li>
+                    <li>Integrar capacidades nativas (cámara, almacenamiento)</li>
+                    <li>Diseñar una interfaz de usuario intuitiva y moderna</li>
+                    <li>Aplicar buenas prácticas de desarrollo móvil</li>
+                </ol>
+
+                <h3>🛠️ Stack Tecnológico</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tecnología</th>
+                            <th>Versión</th>
+                            <th>Propósito</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ionic Framework</strong></td>
+                            <td>7.x</td>
+                            <td>Framework UI para apps híbridas</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Angular</strong></td>
+                            <td>17.x</td>
+                            <td>Framework frontend</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Capacitor</strong></td>
+                            <td>5.x</td>
+                            <td>Acceso a APIs nativas</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TypeScript</strong></td>
+                            <td>5.x</td>
+                            <td>Lenguaje de programación</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SCSS/SASS</strong></td>
+                            <td>-</td>
+                            <td>Estilos y tematización</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- NUEVA SECCIÓN: Bases Teóricas -->
+            <section id="teoria">
+                <h2><ion-icon name="archive-outline"></ion-icon> Bases Teóricas de Ionic</h2>
+                
+                <h3>¿Qué es Ionic Framework?</h3>
+                <p><strong>Ionic</strong> es un SDK (Software Development Kit) de código abierto para el desarrollo de aplicaciones híbridas multiplataforma. Su filosofía principal es "Escribe una vez, corre en todas partes" (Write Once, Run Anywhere). Permite a los desarrolladores web usar tecnologías que ya conocen (HTML, CSS y JavaScript/TypeScript) para crear aplicaciones de alta calidad para iOS, Android, Web (incluyendo PWAs) y escritorio, todo desde una única base de código.</p>
+                <p>A diferencia de soluciones nativas (como Swift/Kotlin) o soluciones "cross-compiled" (como React Native), Ionic utiliza un enfoque basado en <strong>Web Standards</strong>. La aplicación se ejecuta dentro de un contenedor nativo (como Capacitor o el antiguo Cordova), que actúa como un puente para acceder a las funciones nativas del dispositivo (cámara, GPS, sistema de archivos, etc.). La interfaz de usuario (UI) se renderiza en una <strong>WebView</strong>, pero está altamente optimizada y utiliza los componentes UI de Ionic que imitan la apariencia y el comportamiento nativo de cada plataforma.</p>
+
+                <div class="alert alert-info">
+                    <div class="alert-title">💡 Filosofía Moderna de Ionic</div>
+                    <p>La estrategia actual de Ionic se basa en dos pilares:</p>
+                    <ul>
+                        <li><strong>Componentes Web (Web Components):</strong> Desde Ionic 4, la biblioteca de UI de Ionic se distribuye como un conjunto de Componentes Web estándar. Esto significa que no depende de ningún framework en particular (como Angular, React o Vue), sino que puede ser usado con cualquiera de ellos (o incluso sin ninguno).</li>
+                        <li><strong>Capacitor:</strong> Es el sucesor moderno de Cordova. Capacitor es un "puente" nativo que conecta la WebView de tu aplicación con las APIs nativas del dispositivo. Es más moderno, flexible y fácil de mantener que Cordova.</li>
+                    </ul>
+                </div>
+
+                <h3>Historia y Evolución (Versiones)</h3>
+
+                <h4>Ionic 1 (2013) - El inicio con AngularJS</h4>
+                <p>La primera versión de Ionic estaba fuertemente acoplada a <strong>AngularJS 1.x</strong>. Revolucionó el desarrollo híbrido al proporcionar un conjunto de componentes UI robustos y directivas de Angular que facilitaban la creación de aplicaciones con apariencia nativa. Usaba Cordova como puente nativo.</p>
+
+                <h4>Ionic 2 (2016) - Reescribiendo para Angular 2+</h4>
+                <p>Con la llegada de Angular 2 (ahora solo "Angular"), Ionic 2 fue una reescritura completa. Adoptó <strong>TypeScript</strong> y la arquitectura basada en componentes de Angular. Esto mejoró drásticamente el rendimiento, la mantenibilidad del código y la experiencia del desarrollador.</p>
+
+                <h4>Ionic 3 (2017) - Refinamiento y Lazy Loading</h4>
+                <p>Fue una evolución de Ionic 2, alineándose con Angular 4+. Su principal mejora fue la introducción del "Lazy Loading" (carga diferida) a nivel de página, lo que mejoró significativamente los tiempos de arranque de la aplicación al cargar solo el código necesario para la vista actual.</p>
+
+                <h4>Ionic 4 (2019) - "Ionic for Everyone" y Web Components</h4>
+                <p>Esta fue la actualización más transformadora. El equipo de Ionic reescribió todos sus componentes UI como <strong>Web Components</strong>. Esto desacopló a Ionic de Angular, permitiendo que se usara oficialmente con <strong>React, Vue</strong> o cualquier otro framework. Introdujo Capacitor como la solución preferida sobre Cordova. El lema fue "Ionic para todos".</p>
+
+                <h4>Ionic 5 (2020) - Diseño y Personalización</h4>
+                <p>Se centró en refinar la experiencia de la interfaz de usuario. Introdujo un rediseño para asemejarse a la apariencia nativa de iOS 13, animaciones mejoradas, y una API de personalización de componentes mucho más potente a través de variables CSS, permitiendo una tematización más fácil.</p>
+
+                <h4>Ionic 6 (2021) - Componentes Modernos y Vite</h4>
+                <p>Mejoró componentes clave como <code class="code-inline">ion-datetime</code> y <code class="code-inline">ion-modal</code>. Introdujo el "Component Playground" para probar componentes de forma aislada. También comenzó a adoptar herramientas de compilación más rápidas como <strong>Vite</strong> en sus plantillas de inicio.</p>
+
+                <h4>Ionic 7 (2023) - Simplificación y Rendimiento</h4>
+                <p>La versión actual (usada en esta guía) se enfoca en simplificar la API. Hizo de Vite la opción por defecto para los starters de Angular, mejoró el control de superposiciones (Overlays como modals y popovers), y optimizó el rendimiento general, especialmente en la carga de la aplicación.</p>
+
+            </section>
+            <!-- FIN DE LA NUEVA SECCIÓN -->
+
+            <!-- Requisitos --><section id="requisitos">
+                <h2><ion-icon name="clipboard-outline"></ion-icon> Requisitos del Sistema</h2>
+
+                <h3>⚙️ Software Necesario</h3>
+
+                <div class="alert alert-warning">
+                    <div class="alert-title">⚠️ Importante</div>
+                    <p>Asegúrate de tener instalados todos los requisitos antes de comenzar el desarrollo.</p>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Software</th>
+                            <th>Versión Mínima</th>
+                            <th>Descarga</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Node.js</strong></td>
+                            <td>18.x LTS o superior</td>
+                            <td><a href="https://nodejs.org/" target="_blank">nodejs.org</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>npm</strong></td>
+                            <td>9.x o superior</td>
+                            <td>Incluido con Node.js</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Visual Studio Code</strong></td>
+                            <td>Última versión</td>
+                            <td><a href="https://code.visualstudio.com/" target="_blank">code.visualstudio.com</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Git</strong></td>
+                            <td>2.x o superior</td>
+                            <td><a href="https://git-scm.com/" target="_blank">git-scm.com</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>🔌 Extensiones Recomendadas para VS Code</h3>
+
+                <p>Instala las siguientes extensiones en Visual Studio Code para mejorar tu experiencia de desarrollo:</p>
+
+                <ul>
+                    <li><strong>Angular Language Service</strong> - Autocompletado e IntelliSense para Angular</li>
+                    <li><strong>Ionic</strong> - Snippets y herramientas para Ionic</li>
+                    <li><strong>ESLint</strong> - Linter para JavaScript/TypeScript</li>
+                    <li><strong>Prettier</strong> - Formateador de código</li>
+                    <li><strong>Auto Rename Tag</strong> - Renombrado automático de etiquetas HTML</li>
+                    <li><strong>Path Intellisense</strong> - Autocompletado de rutas</li>
+                    <li><strong>Material Icon Theme</strong> - Iconos para archivos y carpetas</li>
+                    <li><strong>GitLens</strong> - Herramientas avanzadas de Git</li>
+                </ul>
+
+                <h4>Instalación de Extensiones desde la Terminal de VS Code:</h4>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Instalar extensiones recomendadas</span>
+<span class="command-prompt">$</span> <span class="command-input">code --install-extension angular.ng-template</span>
+<span class="command-prompt">$</span> <span class="command-input">code --install-extension ionic.ionic</span>
+<span class="command-prompt">$</span> <span class="command-input">code --install-extension dbaeumer.vscode-eslint</span>
+<span class="command-prompt">$</span> <span class="command-input">code --install-extension esbenp.prettier-vscode</span>
+                    </div>
+                </div>
+
+                <h3>📱 Requisitos para Desarrollo Android (Opcional)</h3>
+
+                <p>Si deseas compilar y probar la app en Android:</p>
+
+                <ol class="steps">
+                    <li>
+                        <strong>Java Development Kit (JDK)</strong>
+                        <p>Instala JDK 11 o superior desde <a href="https://www.oracle.com/java/technologies/downloads/" target="_blank">Oracle</a> o <a href="https://adoptium.net/" target="_blank">Adoptium</a></p>
+                    </li>
+                    <li>
+                        <strong>Android Studio</strong>
+                        <p>Descarga e instala desde <a href="https://developer.android.com/studio" target="_blank">developer.android.com/studio</a></p>
+                    </li>
+                    <li>
+                        <strong>SDK de Android</strong>
+                        <p>Instala Android SDK 28+ desde Android Studio (SDK Manager)</p>
+                    </li>
+                    <li>
+                        <strong>Variables de Entorno</strong>
+                        <p>Configura <code class="code-inline">ANDROID_HOME</code> y añade las tools al PATH</p>
+                    </li>
+                </ol>
+            </section>
+
+            <!-- Configuración --><section id="configuracion">
+                <h2><ion-icon name="settings-outline"></ion-icon> Configuración del Entorno</h2>
+
+                <h3>1️⃣ Verificar Instalaciones</h3>
+
+                <p>Primero, verifica que Node.js y npm estén correctamente instalados:</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Verificar versión de Node.js</span>
+<span class="command-prompt">$</span> <span class="command-input">node --version</span>
+<span class="command-output">v20.10.0</span>
+
+<span class="command-comment"># Verificar versión de npm</span>
+<span class="command-prompt">$</span> <span class="command-input">npm --version</span>
+<span class="command-output">10.2.4</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-success">
+                    <div class="alert-title">✅ Versiones Correctas</div>
+                    <p>Si ves versiones similares o superiores, estás listo para continuar.</p>
+                </div>
+
+                <h3>2️⃣ Instalar Ionic CLI</h3>
+
+                <p>El CLI (Command Line Interface) de Ionic es la herramienta principal para crear y gestionar proyectos:</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Instalar Ionic CLI globalmente</span>
+<span class="command-prompt">$</span> <span class="command-input">npm install -g @ionic/cli</span>
+<span class="command-output">
+added 237 packages in 45s
+@ionic/cli@7.1.5
+</span>
+
+<span class="command-comment"># Verificar instalación</span>
+<span class="command-prompt">$</span> <span class="command-input">ionic --version</span>
+<span class="command-output">7.1.5</span>
+                    </div>
+                </div>
+
+                <h3>3️⃣ Crear el Proyecto MediaTagger</h3>
+
+                <p>Ahora crearemos el proyecto base usando el CLI de Ionic:</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Navegar a tu carpeta de proyectos</span>
+<span class="command-prompt">$</span> <span class="command-input">cd ~/Proyectos</span>
+
+<span class="command-comment"># Crear nuevo proyecto Ionic con Angular</span>
+<span class="command-prompt">$</span> <span class="command-input">ionic start MediaTagger tabs --type=angular --capacitor</span>
+<span class="command-output">
+✔ Preparing directory ./MediaTagger - done!
+✔ Downloading and extracting tabs starter - done!
+</span>
+
+<span class="command-output">
+Installing dependencies may take several minutes.
+
+     ✔ npm install - done!
+</span>
+
+<span class="command-output">
+🎉  Your Ionic app is ready! Follow these next steps:
+
+   - Go to your new project: cd ./MediaTagger
+   - Run ionic serve within the app directory to see your app
+   - Build features and components: https://ion.link/scaffolding-docs
+   - Run on a device or simulator: https://ion.link/running-docs
+</span>
+
+<span class="command-comment"># Navegar al directorio del proyecto</span>
+<span class="command-prompt">$</span> <span class="command-input">cd MediaTagger</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <div class="alert-title">ℹ️ Explicación del Comando</div>
+                    <ul>
+                        <li><code class="code-inline">ionic start</code> - Comando para crear un nuevo proyecto</li>
+                        <li><code class="code-inline">MediaTagger</code> - Nombre del proyecto</li>
+                        <li><code class="code-inline">tabs</code> - Plantilla con navegación por pestañas</li>
+                        <li><code class="code-inline">--type=angular</code> - Usar Angular como framework</li>
+                        <li><code class="code-inline">--capacitor</code> - Integrar Capacitor para acceso nativo</li>
+                    </ul>
+                </div>
+
+                <h3>4️⃣ Abrir el Proyecto en Visual Studio Code</h3>
+
+                <p>Abre el proyecto en VS Code de dos formas:</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Opción 1: Desde la terminal</span>
+<span class="command-prompt">$</span> <span class="command-input">code .</span>
+
+<span class="command-comment"># Opción 2: Desde VS Code</span>
+<span class="command-comment"># File > Open Folder > Seleccionar carpeta MediaTagger</span>
+                    </div>
+                </div>
+
+                <h3>5️⃣ Configurar el Proyecto</h3>
+
+                <p>Una vez abierto en VS Code, verifica la estructura y configura ajustes básicos:</p>
+
+                <div class="alert alert-warning">
+                    <div class="alert-title">🔧 Configuraciones Recomendadas</div>
+                    <p>Crea un archivo <code class="code-inline">.vscode/settings.json</code> en la raíz del proyecto con estas configuraciones:</p>
+                </div>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 .vscode/settings.json</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">Configuración de VS Code</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "files.eol": "\n",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.html, ${capture}.scss, ${capture}.spec.ts"
+  }
+}</pre>
+                    </div>
+                </div>
+
+                <h3>6️⃣ Instalar Dependencias Adicionales</h3>
+
+                <p>Instalaremos plugins de Capacitor para acceder a la cámara y almacenamiento:</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Instalar plugin de Cámara</span>
+<span class="command-prompt">$</span> <span class="command-input">npm install @capacitor/camera</span>
+<span class="command-output">
+added 1 package in 3s
+@capacitor/camera@5.0.9
+</span>
+
+<span class="command-comment"># Instalar plugin de Filesystem</span>
+<span class="command-prompt">$</span> <span class="command-input">npm install @capacitor/filesystem</span>
+<span class="command-output">
+added 1 package in 2s
+@capacitor/filesystem@5.2.1
+</span>
+
+<span class="command-comment"># Instalar plugin de Preferences (almacenamiento)</span>
+<span class="command-prompt">$</span> <span class="command-input">npm install @capacitor/preferences</span>
+<span class="command-output">
+added 1 package in 2s
+@capacitor/preferences@5.0.7
+</span>
+                    </div>
+                </div>
+
+                <h3>7️⃣ Ejecutar la Aplicación</h3>
+
+                <p>Inicia el servidor de desarrollo para ver la aplicación en el navegador:</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Iniciar servidor de desarrollo</span>
+<span class="command-prompt">$</span> <span class="command-input">ionic serve</span>
+<span class="command-output">
+> ng run app:serve --host=localhost --port=8100
+
+✔ Browser application bundle generation complete.
+
+Initial Chunk Files   | Names         |  Raw Size
+vendor.js             | vendor        |   2.50 MB | 
+polyfills.js          | polyfills     | 318.09 kB | 
+main.js               | main          |  53.46 kB | 
+styles.css            | styles        |  21.89 kB | 
+
+                      | Initial Total |   2.88 MB
+
+Application bundle generation complete. [4.567 seconds]
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:8100/
+  ➜  press h + enter to show help
+</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-success">
+                    <div class="alert-title">🎉 ¡Aplicación en Ejecución!</div>
+                    <p>Abre tu navegador en <strong>http://localhost:8100/</strong> y verás la aplicación base funcionando.</p>
+                </div>
+            </section>
+
+            <!-- Estructura del Proyecto --><section id="estructura">
+                <h2><ion-icon name="folder-open-outline"></ion-icon> Estructura del Proyecto</h2>
+
+                <!-- NUEVO CONTENIDO -->
+                <h3>Anatomía de un Componente (Página/Tab)</h3>
+                <p>En un proyecto de Ionic con Angular, cada página o componente se compone típicamente de tres archivos principales que trabajan juntos:</p>
+                <ul>
+                    <li><code class="code-inline">*.page.html</code> <strong>(El QUÉ)</strong>
+                        <p>Es la <strong>plantilla</strong> (template). Define la estructura visual de la página usando etiquetas HTML y componentes de Ionic (como <code class="code-inline">&lt;ion-header&gt;</code>, <code class="code-inline">&lt;ion-content&gt;</code>, <code class="code-inline">&lt;ion-button&gt;</code>). Aquí es donde se realiza el "data binding" para mostrar datos (ej. <code class="code-inline">{{ photo.title }}</code>) y para escuchar eventos (ej. <code class="code-inline">(click)="capturePhoto()"</code>).</p>
+                    </li>
+                    <li><code class="code-inline">*.page.ts</code> <strong>(El CÓMO)</strong>
+                        <p>Es la <strong>lógica</strong> (logic). Es un archivo TypeScript que contiene la clase del componente. Aquí se definen las variables (ej. <code class="code-inline">photos: UserPhoto[]</code>), se importan servicios (como el <code class="code-inline">PhotoService</code>) y se escriben los métodos (ej. <code class="code-inline">capturePhoto()</code>) que se ejecutan cuando el usuario interactúa con la vista.</p>
+                    </li>
+                    <li><code class="code-inline">*.page.scss</code> <strong>(El ASPECTO)</strong>
+                        <p>Son los <strong>estilos</strong> (styles). Es un archivo SCSS (Sass, un superconjunto de CSS) que define la apariencia visual específica de esa página. Los estilos definidos aquí están "encapsulados" o "scoped", lo que significa que solo se aplican a esta página y no afectan al resto de la aplicación.</p>
+                    </li>
+                </ul>
+                <p>El archivo <code class="code-inline">*.page.spec.ts</code> es para pruebas unitarias y no se utiliza en la aplicación en producción.</p>
+
+                <!-- CONTENIDO EXISTENTE MEJORADO -->
+                <h3>Estructura Detallada de Carpetas</h3>
+                <p>Un proyecto de Ionic tiene una estructura de carpetas estándar. Las carpetas más importantes con las que interactuarás están dentro de <code class="code-inline">src/</code>:</p>
+
+                <ul>
+                    <li><code class="code-inline">src/app/</code>: Es el corazón de tu aplicación. Contiene todos tus componentes, páginas, servicios y módulos.
+                        <ul>
+                            <li><code class="code-inline">src/app/tabs/</code>: En esta plantilla, esta carpeta gestiona la navegación principal por pestañas.</li>
+                            <li><code class="code-inline">src/app/tab1/</code>, <code class="code-inline">tab2/</code>, etc.: Cada una es una página individual que se muestra en una pestaña.</li>
+                        </ul>
+                    </li>
+                    <li><code class="code-inline">src/assets/</code>: Para archivos estáticos como imágenes, iconos, fuentes personalizadas o archivos JSON que no cambian.</li>
+                    <li><code class="code-inline">src/theme/</code>: Contiene <code class="code-inline">variables.scss</code>, donde defines los colores globales de tu aplicación (primario, secundario, etc.) y otros estilos globales.</li>
+                    <li><code class="code-inline">src/environments/</code>: Contiene archivos de configuración para diferentes entornos (ej. <code class="code-inline">environment.ts</code> para desarrollo y <code class="code-inline">environment.prod.ts</code> para producción). Aquí es donde pondrías claves de API, URLs de backend, etc.</li>
+                </ul>
+
+
+                <div class="project-structure-visualizer">
+                    <div class="root-folder"><ion-icon name="folder-outline" class="folder-icon"></ion-icon> MediaTagger/</div>
+                    <ul>
+                        <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> node_modules/ <span class="comment"># Dependencias de npm (no editar)</span></li>
+                        <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> src/ <span class="comment"># Código fuente de la aplicación</span>
+                            <ul>
+                                <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> app/ <span class="comment"># Componentes y páginas</span>
+                                    <ul>
+                                        <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> tab1/ <span class="comment"># Pestaña 1 (Galería)</span>
+                                            <ul>
+                                                <li><ion-icon name="document-outline" class="file-icon"></ion-icon> tab1.page.html</li>
+                                                <li><ion-icon name="document-outline" class="file-icon"></ion-icon> tab1.page.scss</li>
+                                                <li><ion-icon name="document-outline" class="file-icon"></ion-icon> tab1.page.spec.ts</li>
+                                                <li><ion-icon name="document-outline" class="file-icon"></ion-icon> tab1.page.ts</li>
+                                            </ul>
+                                        </li>
+                                        <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> tab2/ <span class="comment"># Pestaña 2 (Etiquetas)</span></li>
+                                        <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> tab3/ <span class="comment"># Pestaña 3 (Acerca de)</span></li>
+                                        <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> tabs/ <span class="comment"># Navegación por pestañas</span></li>
+                                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> app.component.html</li>
+                                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> app.component.scss</li>
+                                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> app.component.ts</li>
+                                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> app.module.ts</li>
+                                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> app-routing.module.ts</li>
+                                    </ul>
+                                </li>
+                                <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> assets/ <span class="comment"># Imágenes, iconos, etc.</span></li>
+                                <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> environments/ <span class="comment"># Configuración de entornos</span></li>
+                                <li><ion-icon name="folder-outline" class="folder-icon"></ion-icon> theme/ <span class="comment"># Estilos globales</span></li>
+                                <li><ion-icon name="document-outline" class="file-icon"></ion-icon> index.html <span class="comment"># Archivo HTML principal</span></li>
+                                <li><ion-icon name="document-outline" class="file-icon"></ion-icon> main.ts <span class="comment"># Punto de entrada de la app</span></li>
+                                <li><ion-icon name="document-outline" class="file-icon"></ion-icon> global.scss <span class="comment"># Estilos globales</span></li>
+                            </ul>
+                        </li>
+                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> angular.json <span class="comment"># Configuración de Angular</span></li>
+                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> capacitor.config.ts <span class="comment"># Configuración de Capacitor</span></li>
+                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> ionic.config.json <span class="comment"># Configuración de Ionic</span></li>
+                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> package.json <span class="comment"># Dependencias y scripts</span></li>
+                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> tsconfig.json <span class="comment"># Configuración de TypeScript</span></li>
+                        <li><ion-icon name="document-outline" class="file-icon"></ion-icon> README.md <span class="comment"># Documentación del proyecto</span></li>
+                    </ul>
+                </div>
+
+                <h3>📂 Carpetas Clave (Resumen)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Carpeta</th>
+                            <th>Propósito</th>
+                            <th>Frecuencia de Edición</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code class="code-inline">src/app/</code></td>
+                            <td>Componentes, servicios y lógica de la aplicación</td>
+                            <td>⭐⭐⭐⭐⭐ Muy frecuente</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">src/assets/</code></td>
+                            <td>Recursos estáticos (imágenes, iconos)</td>
+                            <td>⭐⭐⭐ Moderada</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">src/theme/</code></td>
+                            <td>Variables de tema y estilos globales</td>
+                            <td>⭐⭐ Ocasional</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">node_modules/</code></td>
+                            <td>Dependencias instaladas (no editar manually)</td>
+                            <td>❌ Nunca</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>🔍 Archivos Importantes (Raíz del Proyecto)</h3>
+
+                <h4>app.component.ts</h4>
+                <p>Componente raíz de la aplicación. Aquí se inicializa la app y se configuran elementos globales.</p>
+
+                <h4>app-routing.module.ts</h4>
+                <p>Define las rutas de navegación entre las diferentes páginas de la aplicación.</p>
+
+                <h4>app.module.ts</h4>
+                <p>Módulo principal que declara componentes, importa módulos externos y configura servicios.</p>
+
+                <h4>capacitor.config.ts</h4>
+                <p>Configuración de Capacitor para acceso a funcionalidades nativas.</p>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 capacitor.config.ts</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">Configuración de Capacitor</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>import { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.mediatagger.app',
+  appName: 'MediaTagger',
+  webDir: 'www', // Carpeta de salida del build web
+  server: {
+    androidScheme: 'https'
+  },
+  plugins: {
+    Camera: {
+      presentationStyle: 'fullscreen'
+    }
+  }
+};
+
+export default config;</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Desarrollo --><section id="desarrollo">
+                <h2><ion-icon name="laptop-outline"></ion-icon> Desarrollo de MediaTagger</h2>
+
+                <h3>🎨 Paso 1: Personalizar la Interfaz</h3>
+
+                <h4>Modificar Tab1 (Galería)</h4>
+
+                <p>Renombraremos y personalizaremos la primera pestaña para que sea la galería de fotos:</p>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 src/app/tab1/tab1.page.html</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">Vista de la Galería</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>&lt;ion-header [translucent]="true"&gt;
+  &lt;ion-toolbar color="primary"&gt;
+    &lt;ion-title&gt;
+      📸 Galería
+    &lt;/ion-title&gt;
+    &lt;ion-buttons slot="end"&gt;
+      &lt;ion-button (click)="openFilterMenu()"&gt;
+        &lt;ion-icon name="filter-outline"&gt;&lt;/ion-icon&gt;
+      &lt;/ion-button&gt;
+    &lt;/ion-buttons&gt;
+  &lt;/ion-toolbar&gt;
+&lt;/ion-header&gt;
+
+&lt;ion-content [fullscreen]="true"&gt;
+  &lt;ion-header collapse="condense"&gt;
+    &lt;ion-toolbar&gt;
+      &lt;ion-title size="large"&gt;Galería&lt;/ion-title&gt;
+    &lt;/ion-toolbar&gt;
+  &lt;/ion-header&gt;
+
+  &lt;!-- Grid de Imágenes --&gt;
+  &lt;div class="gallery-grid" *ngIf="photos.length &gt; 0"&gt;
+    &lt;ion-card *ngFor="let photo of photos" class="photo-card"&gt;
+      &lt;img [src]="photo.webviewPath" [alt]="photo.title" /&gt;
+      &lt;ion-card-content&gt;
+        &lt;div class="tags"&gt;
+          &lt;ion-chip *ngFor="let tag of photo.tags" color="primary"&gt;
+            &lt;ion-label&gt;{{ tag }}&lt;/ion-label&gt;
+          &lt;/ion-chip&gt;
+        &lt;/div&gt;
+      &lt;/ion-card-content&gt;
+    &lt;/ion-card&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Estado Vacío --&gt;
+  &lt;div class="empty-state" *ngIf="photos.length === 0"&gt;
+    &lt;ion-icon name="images-outline"&gt;&lt;/ion-icon&gt;
+    &lt;h2&gt;No hay fotos aún&lt;/h2&gt;
+    &lt;p&gt;Toca el botón de cámara para comenzar&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Botón de Acción Flotante (FAB) --&gt;
+  &lt;ion-fab vertical="bottom" horizontal="end" slot="fixed"&gt;
+    &lt;ion-fab-button color="success" (click)="capturePhoto()"&gt;
+      &lt;ion-icon name="camera"&gt;&lt;/ion-icon&gt;
+    &lt;/ion-fab-button&gt;
+  &lt;/ion-fab&gt;
+&lt;/ion-content&gt;</pre>
+                    </div>
+                </div>
+
+                <h4>Estilos de la Galería</h4>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 src/app/tab1/tab1.page.scss</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">Estilos de la Galería</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>// Grid de la galería
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  padding: 16px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+.photo-card {
+  margin: 0;
+  
+  img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+
+  ion-card-content {
+    padding: 8px;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+
+    ion-chip {
+      margin: 0;
+      height: 24px;
+      font-size: 0.85em;
+    }
+  }
+}
+
+// Estado vacío
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  text-align: center;
+  padding: 20px;
+
+  ion-icon {
+    font-size: 80px;
+    color: var(--ion-color-medium);
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    color: var(--ion-color-medium);
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: var(--ion-color-medium-shade);
+  }
+}</pre>
+                    </div>
+                </div>
+
+                <h3>📝 Paso 2: Implementar la Lógica de la Galería</h3>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 src/app/tab1/tab1.page.ts</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">TypeScript de la Galería</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>import { Component, OnInit } from '@angular/core';
+import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
+import { AlertController, ActionSheetController } from '@ionic/angular';
+import { PhotoService } from '../services/photo.service';
+
+export interface UserPhoto {
+  filepath: string;
+  webviewPath?: string;
+  title: string;
+  tags: string[];
+  date: Date;
+}
+
+@Component({
+  selector: 'app-tab1',
+  templateUrl: 'tab1.page.html',
+  styleUrls: ['tab1.page.scss']
+})
+export class Tab1Page implements OnInit {
+  photos: UserPhoto[] = [];
+
+  constructor(
+    private photoService: PhotoService,
+    private alertController: AlertController,
+    private actionSheetController: ActionSheetController
+  ) {}
+
+  ngOnInit() {
+    this.loadPhotos();
+  }
+
+  async loadPhotos() {
+    this.photos = await this.photoService.loadSaved();
+  }
+
+  async capturePhoto() {
+    // Capturar foto usando la cámara
+    const photo = await Camera.getPhoto({
+      resultType: CameraResultType.Uri,
+      source: CameraSource.Camera,
+      quality: 90
+    });
+
+    // Mostrar diálogo para agregar etiquetas
+    const alert = await this.alertController.create({
+      header: 'Etiquetar Foto',
+      inputs: [
+        {
+          name: 'title',
+          type: 'text',
+          placeholder: 'Título de la foto'
+        },
+        {
+          name: 'tags',
+          type: 'text',
+          placeholder: 'Etiquetas (separadas por comas)'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Guardar',
+          handler: async (data) => {
+            const tags = data.tags ? data.tags.split(',').map((t: string) => t.trim()) : [];
+            await this.photoService.addNewToGallery(photo, data.title || 'Sin título', tags);
+            await this.loadPhotos();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async openFilterMenu() {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Filtrar por',
+      buttons: [
+        {
+          text: 'Todas las fotos',
+          icon: 'images-outline',
+          handler: () => {
+            this.loadPhotos();
+          }
+        },
+        {
+          text: 'Por etiqueta',
+          icon: 'pricetag-outline',
+          handler: async () => {
+            // Implementar filtrado por etiqueta
+            console.log('Filtrar por etiqueta');
+          }
+        },
+        {
+          text: 'Por fecha',
+          icon: 'calendar-outline',
+          handler: () => {
+            // Implementar filtrado por fecha
+            console.log('Filtrar por fecha');
+          }
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await actionSheet.present();
+  }
+}</pre>
+                    </div>
+                </div>
+
+                <h3>🔧 Paso 3: Crear el Servicio de Fotos</h3>
+
+                <p>Generaremos un servicio para manejar la lógica de almacenamiento de fotos:</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Generar servicio de fotos</span>
+<span class="command-prompt">$</span> <span class="command-input">ionic generate service services/photo</span>
+<span class="command-output">
+CREATE src/app/services/photo.service.spec.ts (357 bytes)
+CREATE src/app/services/photo.service.ts (133 bytes)
+</span>
+                    </div>
+                </div>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 src/app/services/photo.service.ts</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">Servicio de Gestión de Fotos</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>import { Injectable } from '@angular/core';
+import { Camera, Photo } from '@capacitor/camera';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Preferences } from '@capacitor/preferences';
+import { Platform } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+
+export interface UserPhoto {
+  filepath: string;
+  webviewPath?: string;
+  title: string;
+  tags: string[];
+  date: Date;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PhotoService {
+  public photos: UserPhoto[] = [];
+  private PHOTO_STORAGE = 'photos';
+  private platform: Platform;
+
+  constructor(platform: Platform) {
+    this.platform = platform;
+  }
+
+  public async addNewToGallery(photo: Photo, title: string, tags: string[]) {
+    // Guardar la foto en el sistema de archivos
+    const savedImageFile = await this.savePicture(photo);
+
+    // Agregar la nueva foto al inicio del array
+    const newPhoto: UserPhoto = {
+      filepath: savedImageFile.filepath,
+      webviewPath: savedImageFile.webviewPath,
+      title,
+      tags,
+      date: new Date()
+    };
+
+    this.photos.unshift(newPhoto);
+
+    // Guardar en Preferences
+    await Preferences.set({
+      key: this.PHOTO_STORAGE,
+      value: JSON.stringify(this.photos)
+    });
+  }
+
+  private async savePicture(photo: Photo) {
+    // Convertir foto a base64
+    const base64Data = await this.readAsBase64(photo);
+
+    // Escribir el archivo en el directorio de datos
+    const fileName = new Date().getTime() + '.jpeg';
+    const savedFile = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Data
+    });
+
+    if (this.platform.is('hybrid')) {
+      // Mostrar la nueva imagen reescribiendo el path 'file://'
+      return {
+        filepath: savedFile.uri,
+        webviewPath: Capacitor.convertFileSrc(savedFile.uri)
+      };
+    } else {
+      // Usar webPath para mostrar la nueva imagen en la web
+      return {
+        filepath: fileName,
+        webviewPath: photo.webPath
+      };
+    }
+  }
+
+  private async readAsBase64(photo: Photo) {
+    // "hybrid" detectará Cordova o Capacitor
+    if (this.platform.is('hybrid')) {
+      // Leer el archivo como base64
+      const file = await Filesystem.readFile({
+        path: photo.path!
+      });
+
+      return file.data;
+    } else {
+      // Obtener la foto, leerla como blob y convertirla a base64
+      const response = await fetch(photo.webPath!);
+      const blob = await response.blob();
+
+      return await this.convertBlobToBase64(blob) as string;
+    }
+  }
+
+  private convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.readAsDataURL(blob);
+  });
+
+  public async loadSaved() {
+    // Recuperar datos del array de fotos almacenado
+    const { value } = await Preferences.get({ key: this.PHOTO_STORAGE });
+    this.photos = (value ? JSON.parse(value) : []) as UserPhoto[];
+
+    // Convertir las fechas de string a Date
+    this.photos = this.photos.map(photo => ({
+      ...photo,
+      date: new Date(photo.date)
+    }));
+
+    // Mostrar las fotos leyendo el formato base64
+    if (!this.platform.is('hybrid')) {
+      for (let photo of this.photos) {
+        // Leer los datos de cada foto guardada del sistema de archivos
+        const readFile = await Filesystem.readFile({
+          path: photo.filepath,
+          directory: Directory.Data
+        });
+
+        // Solo plataforma web: cargar la foto como base64
+        photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
+      }
+    }
+
+    return this.photos;
+  }
+
+  public async deletePhoto(photo: UserPhoto) {
+    // Eliminar la foto del array
+    this.photos = this.photos.filter(p => p.filepath !== photo.filepath);
+
+    // Actualizar el array de fotos almacenado
+    await Preferences.set({
+      key: this.PHOTO_STORAGE,
+      value: JSON.stringify(this.photos)
+    });
+
+    // Eliminar el archivo del sistema de archivos
+    const filename = photo.filepath.substr(photo.filepath.lastIndexOf('/') + 1);
+    await Filesystem.deleteFile({
+      path: filename,
+      directory: Directory.Data
+    });
+  }
+}</pre>
+                    </div>
+                </div>
+
+                <h3>🏷️ Paso 4: Implementar Gestión de Etiquetas (Tab2)</h3>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 src/app/tab2/tab2.page.html</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">Vista de Etiquetas</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>&lt;ion-header [translucent]="true"&gt;
+  &lt;ion-toolbar color="primary"&gt;
+    &lt;ion-title&gt;
+      🏷️ Etiquetas
+    &lt;/ion-title&gt;
+  &lt;/ion-toolbar&gt;
+&lt;/ion-header&gt;
+
+&lt;ion-content [fullscreen]="true"&gt;
+  &lt;ion-header collapse="condense"&gt;
+    &lt;ion-toolbar&gt;
+      &lt;ion-title size="large"&gt;Etiquetas&lt;/ion-title&gt;
+    &lt;/ion-toolbar&gt;
+  &lt;/ion-header&gt;
+
+  &lt;ion-list&gt;
+    &lt;ion-list-header&gt;
+      &lt;ion-label&gt;Mis Etiquetas&lt;/ion-label&gt;
+      &lt;ion-button fill="clear" (click)="addTag()"&gt;
+        &lt;ion-icon name="add-circle-outline"&gt;&lt;/ion-icon&gt;
+      &lt;/ion-button&gt;
+    &lt;/ion-list-header&gt;
+
+    &lt;ion-item *ngFor="let tag of tags" button (click)="filterByTag(tag.name)"&gt;
+      &lt;ion-icon name="pricetag" slot="start" [color]="tag.color"&gt;&lt;/ion-icon&gt;
+      &lt;ion-label&gt;
+        &lt;h2&gt;{{ tag.name }}&lt;/h2&gt;
+        &lt;p&gt;{{ tag.count }} fotos&lt;/p&gt;
+      &lt;/ion-label&gt;
+      &lt;ion-button fill="clear" slot="end" (click)="deleteTag(tag); $event.stopPropagation()"&gt;
+        &lt;ion-icon name="trash-outline" color="danger"&gt;&lt;/ion-icon&gt;
+      &lt;/ion-button&gt;
+    &lt;/ion-item&gt;
+
+    &lt;ion-item *ngIf="tags.length === 0" lines="none"&gt;
+      &lt;ion-label class="ion-text-center" color="medium"&gt;
+        &lt;p&gt;No hay etiquetas aún&lt;/p&gt;
+        &lt;p&gt;Las etiquetas aparecerán aquí cuando agregues fotos&lt;/p&gt;
+      &lt;/ion-label&gt;
+    &lt;/ion-item&gt;
+  &lt;/ion-list&gt;
+&lt;/ion-content&gt;</pre>
+                    </div>
+                </div>
+
+                <h3>ℹ️ Paso 5: Página "Acerca de" (Tab3)</h3>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 src/app/tab3/tab3.page.html</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">Página Acerca de</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>&lt;ion-header [translucent]="true"&gt;
+  &lt;ion-toolbar color="primary"&gt;
+    &lt;ion-title&gt;
+      ℹ️ Acerca de
+    &lt;/ion-title&gt;
+  &lt;/ion-toolbar&gt;
+&lt;/ion-header&gt;
+
+&lt;ion-content [fullscreen]="true" class="ion-padding"&gt;
+  &lt;div class="about-container"&gt;
+    &lt;ion-card&gt;
+      &lt;ion-card-header&gt;
+        &lt;div class="app-logo"&gt;
+          &lt;ion-icon name="camera" size="large"&gt;&lt;/ion-icon&gt;
+        &lt;/div&gt;
+        &lt;ion-card-title class="ion-text-center"&gt;MediaTagger&lt;/ion-card-title&gt;
+        &lt;ion-card-subtitle class="ion-text-center"&gt;Versión 1.0.0&lt;/ion-card-subtitle&gt;
+      &lt;/ion-card-header&gt;
+
+      &lt;ion-card-content&gt;
+        &lt;p&gt;
+          MediaTagger es una aplicación móvil multiplataforma que te permite
+          capturar y organizar tus fotos mediante un sistema inteligente de etiquetas.
+        &lt;/p&gt;
+        
+        &lt;h3&gt;Características:&lt;/h3&gt;
+        &lt;ion-list&gt;
+          &lt;ion-item lines="none"&gt;
+            &lt;ion-icon name="camera" slot="start"&gt;&lt;/ion-icon&gt;
+            &lt;ion-label&gt;Captura de fotos&lt;/ion-label&gt;
+          &lt;/ion-item&gt;
+          &lt;ion-item lines="none"&gt;
+            &lt;ion-icon name="pricetags" slot="start"&gt;&lt;/ion-icon&gt;
+            &lt;ion-label&gt;Sistema de etiquetado&lt;/ion-label&gt;
+          &lt;/ion-item&gt;
+          &lt;ion-item lines="none"&gt;
+            &lt;ion-icon name="search" slot="start"&gt;&t;/ion-icon&gt;
+            &lt;ion-label&gt;Búsqueda y filtros&lt;/ion-label&gt;
+          &lt;/ion-item&gt;
+          &lt;ion-item lines="none"&gt;
+            &lt;ion-icon name="cloud-offline" slot="start"&gt;&lt;/ion-icon&gt;
+            &lt;ion-label&gt;Funciona sin conexión&lt;/ion-label&gt;
+          &lt;/ion-item&gt;
+        &lt;/ion-list&gt;
+      &lt;/ion-card-content&gt;
+    &lt;/ion-card&gt;
+
+    &lt;ion-card&gt;
+      &lt;ion-card-header&gt;
+        &lt;ion-card-title&gt;Tecnologías&lt;/ion-card-title&gt;
+      &lt;/ion-card-header&gt;
+      &lt;ion-card-content&gt;
+        &lt;ion-chip&gt;
+          &lt;ion-label&gt;Ionic Framework&lt;/ion-label&gt;
+        &lt;/ion-chip&gt;
+        &lt;ion-chip&gt;
+          &lt;ion-label&gt;Angular&lt;/ion-label&gt;
+        &lt;/ion-chip&gt;
+        &lt;ion-chip&gt;
+          &lt;ion-label&gt;Capacitor&lt;/ion-label&gt;
+        &lt;/ion-chip&gt;
+        &lt;ion-chip&gt;
+          &lt;ion-label&gt;TypeScript&lt;/ion-label&gt;
+        &lt;/ion-chip&gt;
+      &lt;/ion-card-content&gt;
+    &lt;/ion-card&gt;
+
+    &lt;ion-card&gt;
+      &lt;ion-card-header&gt;
+        &lt;ion-card-title&gt;Desarrollador&lt;/ion-card-title&gt;
+      &lt;/ion-card-header&gt;
+      &lt;ion-card-content&gt;
+        &lt;p&gt;Proyecto educativo - Énfasis en Programación Móvil&lt;/p&gt;
+        &lt;p&gt;Politécnico Grancolombiano&lt;/p&gt;
+      &lt;/ion-card-content&gt;
+    &lt;/ion-card&gt;
+  &lt;/div&gt;
+&lt;/ion-content&gt;</pre>
+                    </div>
+                </div>
+
+                <h3>🎨 Paso 6: Personalizar el Tema</h3>
+
+                <p>Modifica el archivo de variables de tema para personalizar los colores de MediaTagger:</p>
+
+                <div class="code-snippet">
+                    <div class="code-header">
+                        <span>📄 src/theme/variables.scss</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;">Variables de Tema</span>
+                    </div>
+                    <div class="code-body">
+                        <pre>:root {
+  /** primary **/
+  --ion-color-primary: #3880ff;
+  --ion-color-primary-rgb: 56, 128, 255;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #3171e0;
+  --ion-color-primary-tint: #4c8dff;
+
+  /** success (para FAB de cámara) **/
+  --ion-color-success: #2dd36f;
+  --ion-color-success-rgb: 45, 211, 111;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #28ba62;
+  --ion-color-success-tint: #42d77d;
+
+  /** Personalizados para MediaTagger **/
+  --app-background: #f4f5f8;
+  --app-card-radius: 12px;
+  --app-spacing: 16px;
+}
+
+/* Estilos globales */
+.gallery-grid {
+  padding: var(--app-spacing);
+}
+
+ion-card {
+  border-radius: var(--app-card-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.about-container {
+  max-width: 600px;
+  margin: 0 auto;
+  
+  .app-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    
+    ion-icon {
+      font-size: 80px;
+      color: var(--ion-color-primary);
+    }
+  }
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pruebas --><section id="pruebas">
+                <h2><ion-icon name="flask-outline"></ion-icon> Pruebas y Compilación</h2>
+
+                <h3>🌐 Prueba en el Navegador (Desarrollo)</h3>
+                <p>Este es el modo que has estado usando. Inicia un servidor local con recarga en vivo.</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Iniciar servidor de desarrollo</span>
+<span class="command-prompt">$</span> <span class="command-input">ionic serve</span>
+<span class="command-output">
+✔ Browser application bundle generation complete.
+➜  Local:   http://localhost:8100/
+</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <div class="alert-title">💡 Herramientas de Desarrollo</div>
+                    <ul>
+                        <li>Presiona <code class="code-inline">F12</code> para abrir DevTools</li>
+                        <li>Activa el modo dispositivo (ícono de teléfono) para simular móvil</li>
+                        <li>Los cambios se recargan automáticamente (Hot Reload)</li>
+                    </ul>
+                </div>
+
+                <!-- NUEVO CONTENIDO -->
+                <h3>🖥️ Compilación Web (Producción)</h3>
+                <p>Cuando tu aplicación está lista para ser desplegada en un servidor web (como un sitio web estático), debes crear una compilación de producción optimizada.</p>
+
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                    </div>
+                    <div class="command">
+<span class="command-comment"># Crear compilación optimizada para producción</span>
+<span class="command-prompt">$</span> <span class="command-input">ionic build</span>
+<span class="command-comment"># Esto ejecuta 'ng build --prod' bajo el capó</span>
+<span class="command-output">
+✔ Browser application bundle generation complete.
+... (archivos minificados y optimizados)
+</span>
+                    </div>
+                </div>
+                <p>Esto genera una carpeta <code class="code-inline">www/</code> (o <code class="code-inline">dist/</code> dependiendo de tu <code class="code-inline">angular.json</code>) con todos los archivos HTML, CSS y JS listos para subir a un hosting.</p>
+
+
+                <h3>📱 Compilación PWA (Progressive Web App)</h3>
+                <p>Una PWA es una aplicación web que se puede "instalar" en el dispositivo del usuario y funcionar sin conexión. Ionic con Angular tiene un excelente soporte para esto.</p>
+                
+                <ol class="steps">
+                    <li>
+                        <strong>Agregar Capacidades PWA</strong>
+                        <p>Si no lo hiciste al inicio, puedes agregarlo con el CLI de Angular:</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ng add @angular/pwa</span>
+<span class="command-output">
+✔ Service worker configuration added.
+✔ manifest.webmanifest and icons added.
+</span>
+                            </div>
+                        </div>
+                        <p>Esto añade un <strong>Service Worker</strong> (<code class="code-inline">ngsw-worker.js</code>) y un <strong>Web Manifest</strong> (<code class="code-inline">manifest.webmanifest</code>), que son los cerebros de la PWA.</p>
+                    </li>
+                    <li>
+                        <strong>Construir la PWA</strong>
+                        <p>El comando es el mismo que el de producción. El CLI de Angular detectará la configuración del Service Worker y la incluirá.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic build</span>
+                            </div>
+                        </div>
+                        <p>Al desplegar el contenido de la carpeta <code class="code-inline">www/</code> en un servidor (<strong>con HTTPS</strong>), los navegadores modernos permitirán a los usuarios "Instalar" la aplicación.</p>
+                    </li>
+                </ol>
+
+                <!-- CONTENIDO EXISTENTE -->
+                <h3>📱 Prueba en Dispositivo Android</h3>
+                <ol class="steps">
+                    <li>
+                        <strong>Construir el Proyecto Web</strong>
+                        <p>Crea la versión web optimizada que será empaquetada.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic build</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Agregar Plataforma Android</strong>
+                        <p>Este comando solo se ejecuta una vez para crear la carpeta <code class="code-inline">android/</code>.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic cap add android</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Sincronizar Cambios</strong>
+                        <p>Este es el comando clave. Copia los archivos web de <code class="code-inline">www/</code> al proyecto nativo de Android y actualiza los plugins.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic cap sync android</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Abrir en Android Studio</strong>
+                        <p>Abre el proyecto nativo en el IDE de Android.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic cap open android</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Ejecutar en Dispositivo</strong>
+                        <p>Desde Android Studio: Conecta tu dispositivo (con depuración USB activada) y presiona "Run" (▶️).</p>
+                    </li>
+                </ol>
+
+                <div class="alert alert-warning">
+                    <div class="alert-title">⚠️ Permisos de Android</div>
+                    <p>Capacitor gestiona muchos permisos automáticamente. Para la cámara, se añadirán al sincronizar. Asegúrate de que tu <code class="code-inline">android/app/src/main/AndroidManifest.xml</code> los tenga.</p>
+                    <pre>&lt;uses-permission android:name="android.permission.CAMERA" /&gt;
+&lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/&gt;
+&lt;uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/&gt;</pre>
+                </div>
+
+                <!-- NUEVO CONTENIDO -->
+                <h3>🍏 Prueba en Dispositivo iOS</h3>
+                <div class="alert alert-danger">
+                    <div class="alert-title">🚫 Requisito Indispensable</div>
+                    <p>Para compilar aplicaciones de iOS, necesitas tener una computadora con <strong>macOS</strong> y <strong>Xcode</strong> instalado (disponible gratis en la App Store de Mac).</p>
+                </div>
+
+                <ol class="steps">
+                    <li>
+                        <strong>Construir el Proyecto Web</strong>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic build</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Agregar Plataforma iOS</strong>
+                        <p>Crea la carpeta <code class="code-inline">ios/</code> con el proyecto de Xcode.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic cap add ios</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Sincronizar Cambios</strong>
+                        <p>Copia los archivos web de <code class="code-inline">www/</code> al proyecto de iOS.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic cap sync ios</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Instalar Dependencias Nativas (CocoaPods)</strong>
+                        <p>Capacitor usa CocoaPods para gestionar plugins en iOS.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-comment"># Navegar a la carpeta nativa</span>
+<span class="command-prompt">$</span> <span class="command-input">cd ios/App</span>
+<span class="command-comment"># Instalar los pods (plugins)</span>
+<span class="command-prompt">$</span> <span class="command-input">pod install</span>
+<span class="command-comment"># Regresar a la raíz</span>
+<span class="command-prompt">$</span> <span class="command-input">cd ../../</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Abrir en Xcode</strong>
+                        <p>Abre el proyecto nativo en Xcode.</p>
+                        <div class="terminal">
+                            <div class="command">
+<span class="command-prompt">$</span> <span class="command-input">ionic cap open ios</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Ejecutar en Dispositivo</strong>
+                        <p>Desde Xcode: Conecta tu iPhone o iPad. Deberás seleccionar tu cuenta de desarrollador (puede ser una gratuita) en la pestaña "Signing & Capabilities" y luego presionar "Run" (▶️).</p>
+                    </li>
+                </ol>
+
+                <h3>🔄 Flujo de Desarrollo Continuo</h3>
+                <p>Tu flujo de trabajo diario será:</p>
+                <ol>
+                    <li>Desarrollar y probar en el navegador: <code class="code-inline">ionic serve</code>.</li>
+                    <li>Cuando estés listo para probar en un dispositivo: <code class="code-inline">ionic build</code>.</li>
+                    <li>Luego: <code class="code-inline">ionic cap sync android</code> (o <code class="code-inline">ios</code>).</li>
+                    <li>Finalmente: <code class="code-inline">ionic cap open android</code> (o <code class="code-inline">ios</code>) para ejecutar desde el IDE nativo.</li>
+                </ol>
+                
+
+                <h3>📊 Comandos Útiles</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Comando</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code class="code-inline">ionic serve</code></td>
+                            <td>Inicia servidor de desarrollo</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">ionic build</code></td>
+                            <td>Construye la aplicación web para producción (llena la carpeta <code class="code-inline">www/</code>)</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">ionic generate page nombre</code></td>
+                            <td>Genera una nueva página (HTML, TS, SCSS)</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">ionic generate service nombre</code></td>
+                            <td>Genera un nuevo servicio</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">ionic cap sync</code></td>
+                            <td>Sincroniza el build web con todas las plataformas (Android/iOS)</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">ionic cap open android</code></td>
+                            <td>Abre el proyecto en Android Studio</td>
+                        </tr>
+                         <tr>
+                            <td><code class="code-inline">ionic cap open ios</code></td>
+                            <td>Abre el proyecto en Xcode</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">ionic info</code></td>
+                            <td>Muestra información del entorno</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-success">
+                    <div class="alert-title">🎉 ¡Felicitaciones!</div>
+                    <p>Has completado la configuración y desarrollo básico de MediaTagger. Ahora tienes una aplicación funcional con capacidad de capturar y etiquetar fotos.</p>
+                </div>
+
+                <h3>🚀 Próximos Pasos</h3>
+
+                <ul>
+                    <li>Implementar la funcionalidad de edición de fotos</li>
+                    <li>Agregar búsqueda avanzada por múltiples etiquetas</li>
+                    <li>Implementar sincronización en la nube (Firebase, AWS)</li>
+                    <li>Agregar compartir fotos en redes sociales</li>
+                    <li>Implementar reconocimiento de imágenes con IA</li>
+                    <li>Crear copias de seguridad automáticas</li>
+                    <li>Agregar soporte para videos</li>
+                </ul>
+            </section>
+
+            <!-- Recursos --><section id="recursos">
+                <h2><ion-icon name="book-outline"></ion-icon> Recursos Adicionales</h2>
+
+                <h3>📖 Documentación Oficial</h3>
+                <ul>
+                    <li><a href="https://ionicframework.com/docs" target="_blank">Ionic Framework Documentation</a></li>
+                    <li><a href="https://angular.io/docs" target="_blank">Angular Documentation</a></li>
+                    <li><a href="https://capacitorjs.com/docs" target="_blank">Capacitor Documentation</a></li>
+                    <li><a href="https://www.typescriptlang.org/docs/" target="_blank">TypeScript Documentation</a></li>
+                </ul>
+
+                <h3>🎓 Tutoriales y Cursos</h3>
+                <ul>
+                    <li><a href="https://ionicframework.com/getting-started" target="_blank">Ionic Getting Started Guide</a></li>
+                    <li><a href="https://www.udemy.com/topic/ionic/" target="_blank">Cursos de Ionic en Udemy</a></li>
+                    <li><a href="https://www.youtube.com/c/Ionicframework" target="_blank">Ionic Framework YouTube Channel</a></li>
+                </ul>
+
+                <h3>💬 Comunidad</h3>
+                <ul>
+                    <li><a href="https://forum.ionicframework.com/" target="_blank">Ionic Forum</a></li>
+                    <li><a href="https://ionic.link/discord" target="_blank">Ionic Discord</a></li>
+                    <li><a href="https://stackoverflow.com/questions/tagged/ionic-framework" target="_blank">Stack Overflow - Ionic</a></li>
+                </ul>
+
+                <h3>🛠️ Herramientas Útiles</h3>
+                <ul>
+                    <li><a href="https://ionic.io/ionicons" target="_blank">Ionicons - Biblioteca de Iconos</a></li>
+                    <li><a href="https://www.figma.com/@ionic" target="_blank">Ionic Design Resources (Figma)</a></li>
+                    <li><a href="https://market.ionic.io/" target="_blank">Ionic Marketplace</a></li>
+                </ul>
+            </section>
+        </div>
+
+        <!-- Footer --><footer>
+            <p><strong>MediaTagger</strong> - Guía de Desarrollo con Ionic Framework</p>
+            <p>Énfasis en Programación Móvil | Politécnico Grancolombiano</p>
+            <p style="margin-top: 20px; opacity: 0.7;">📱 Creado con Ionic 7 + Angular 17 + Capacitor 5</p>
+        </footer>
+    </div>
+
+    <script>
+        // Smooth scroll para la navegación
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    // Quitar la clase 'active' de todos los enlaces
+                    document.querySelectorAll('nav a').forEach(link => link.classList.remove('active'));
+                    // Añadir 'active' al enlace clickeado
+                    this.classList.add('active');
+                    
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight de la sección activa en el nav
+        window.addEventListener('scroll', () => {
+            let current = 'introduccion'; // Default a la primera sección
+            const navHeight = document.querySelector('nav').offsetHeight;
+
+            document.querySelectorAll('section').forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (window.scrollY >= (sectionTop - navHeight - 20)) { // Ajuste por altura de nav
+                    current = section.getAttribute('id');
+                }
+            });
+
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }, { passive: true }); // Mejorar performance de scroll
+    </script>
+</body>
+</html>
+

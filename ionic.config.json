@@ -1,0 +1,7 @@
+{
+  "name": "MediaTagger",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

@@ -1,0 +1,78 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      🏷️ Etiquetas
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Etiquetas</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>
+        <h2>Gestionar Etiquetas</h2>
+        <p>Toca una etiqueta para ver las fotos relacionadas</p>
+      </ion-label>
+      <ion-button fill="outline" size="small" (click)="addNewTag()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Nueva
+      </ion-button>
+    </ion-list-header>
+
+    <ion-item *ngFor="let tag of tags; trackBy: trackByTagName" button (click)="filterByTag(tag.name)">
+      <ion-icon name="pricetag" slot="start" [color]="getTagColor(tag.name)"></ion-icon>
+      <ion-label>
+        <h3>{{ tag.name }}</h3>
+        <p>{{ tag.count }} {{ tag.count === 1 ? 'foto' : 'fotos' }}</p>
+      </ion-label>
+      <ion-badge slot="end" [color]="getTagColor(tag.name)">{{ tag.count }}</ion-badge>
+      <ion-button fill="clear" slot="end" (click)="editTag(tag, $event)">
+        <ion-icon name="create-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <ion-item *ngIf="tags.length === 0" lines="none">
+      <ion-icon name="pricetag-outline" slot="start" color="medium"></ion-icon>
+      <ion-label>
+        <h3>No hay etiquetas aún</h3>
+        <p>Las etiquetas aparecerán aquí cuando agregues fotos</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- Estadísticas -->
+  <ion-card class="stats-card" *ngIf="stats.totalPhotos > 0">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="analytics-outline"></ion-icon>
+        Estadísticas
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number">{{ stats.totalPhotos }}</div>
+          <div class="stat-label">Total de fotos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{ stats.totalTags }}</div>
+          <div class="stat-label">Etiquetas únicas</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{ stats.avgTagsPerPhoto | number:'1.1-1' }}</div>
+          <div class="stat-label">Promedio etiquetas/foto</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{ stats.mostUsedTag?.name || 'N/A' }}</div>
+          <div class="stat-label">Etiqueta más usada</div>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
