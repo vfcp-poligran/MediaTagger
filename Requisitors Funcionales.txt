@@ -1,0 +1,43 @@
+Requisitos Funcionales (RF)
+ID	Requisito Funcional
+RF-001	El sistema debe solicitar y obtener permisos de usuario para acceder a la galería de medios (fotos y videos) del dispositivo.
+RF-002	El sistema debe mostrar los medios (fotos y videos) de la galería del dispositivo en una cuadrícula (grid) con paginación o scroll infinito.
+RF-003	El usuario debe poder crear etiquetas personalizadas (ej. "Personal", "Trabajo", "Diversión").
+RF-004	El usuario debe poder ver una lista de todas las etiquetas creadas.
+RF-005	El usuario debe poder eliminar etiquetas existentes. Al eliminar una etiqueta, esta se desvinculará de todos los medios asociados.
+RF-006	Al seleccionar un archivo multimedia, el usuario debe poder asignarle una o más etiquetas existentes.
+RF-007	Al seleccionar un archivo multimedia, el usuario debe poder desvincular (quitar) etiquetas previamente asignadas.
+RF-008	El usuario debe poder filtrar la vista de la galería para mostrar solo los medios que coincidan con una o más etiquetas seleccionadas.
+RF-009	El sistema debe proveer acceso a la cámara del dispositivo (API Nativa) para capturar una nueva foto o video.
+RF-010	Los medios capturados con la cámara (RF-009) deben guardarse en la galería del dispositivo y estar disponibles inmediatamente en la app para ser etiquetados.
+RF-011	La aplicación debe incluir una sección "Acerca de" (ej. en el menú lateral o en una pestaña de configuración) accesible para el usuario.
+RF-012	La sección "Acerca de" (RF-011) debe mostrar, como mínimo: Curso, Código, Integrantes (Nombre y correo), Fecha de Lanzamiento y Versión de la app.
+2.3. Requisitos No Funcionales (RNF)
+ID	Requisito No Funcional
+RNF-001	La aplicación debe ser desarrollada usando el framework Ionic (v7 o superior).
+RNF-002	La aplicación debe usar Capacitor (v5 o superior) para el acceso a las APIs nativas (Cámara, Galería/Fotos).
+RNF-003	La aplicación debe funcionar en la plataforma Android (v8.0 o superior).
+RNF-004	La aplicación debe ser 100% funcional sin conexión a Internet, ya que opera exclusivamente con datos locales.
+RNF-005	La carga de la galería debe ser eficiente (lazy-loading) para no bloquear la UI, incluso con miles de imágenes.
+RNF-006	La UI debe ser limpia, intuitiva y utilizar los componentes adaptables de Ionic para una experiencia nativa.
+2.4. Requisitos de Almacenamiento Local
+ID	Requisito de Almacenamiento
+RA-001	La aplicación DEBE usar el plugin Ionic Storage para gestionar el almacenamiento de datos.
+RA-002	Ionic Storage DEBE ser configurado para usar el driver de SQLite como motor de almacenamiento principal para garantizar persistencia y capacidad de consulta.
+RA-003	El sistema debe almacenar la lista de "Etiquetas" creadas por el usuario (ej. { id: 1, nombre: 'Personal' }).
+RA-004	El sistema debe almacenar las asociaciones entre los medios y las etiquetas. Se debe guardar el identificador único del medio (proporcionado por la API de la galería) y el ID de la etiqueta. (Ej. { mediaId: 'uri-persistente-123', tagId: 1 }).
+RA-005	La aplicación NO DEBE copiar ni almacenar los archivos de imagen o video. Solo debe almacenar los metadatos y las asociaciones de etiquetas.
+Flujo de Navegación
+El flujo de navegación principal se centra en tres vistas (pestañas): Galería, Etiquetas y Acerca de. El usuario puede navegar entre estas vistas. Desde la Galería, puede acceder a la Cámara (para capturar) o a un modal de etiquetado. 
+
+
+Adicionalmente, el Modelo de Dominio (Entidad-Relación) que define la estructura de datos es el siguiente:
+
+Modelo de Dominio (Entidad-Relación Simplificado)
+MediaItem
+- mediaId (string) [PK]
+- uri (string)
+Tag
+- tagId (number) [PK]
+- nombre (string)
+Nota sobre el Modelo: La relación "Muchos a Muchos" (*..*) entre MediaItem y Tag se implementará en SQLite mediante una tabla de asociación (ej. Media_Tags) que contendrá mediaId y tagId como claves foráneas.

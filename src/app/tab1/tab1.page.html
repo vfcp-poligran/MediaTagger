@@ -4,10 +4,22 @@
       📸 Galería
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="openFilterMenu()">
-        <ion-icon name="filter-outline"></ion-icon>
+      <ion-button (click)="showFilterMenu()" [color]="hasActiveFilters ? 'warning' : 'light'">
+        <ion-icon name="filter"></ion-icon>
+      </ion-button>
+      <ion-button (click)="showCameraOptions()">
+        <ion-icon name="add"></ion-icon>
       </ion-button>
     </ion-buttons>
+  </ion-toolbar>
+  
+  <!-- Barra de filtros -->
+  <ion-toolbar *ngIf="hasActiveFilters" color="light">
+    <ion-chip color="medium" outline="true">
+      <ion-icon name="filter" color="primary"></ion-icon>
+      <ion-label>{{ filterText }}</ion-label>
+      <ion-icon name="close-circle" (click)="clearFilters()"></ion-icon>
+    </ion-chip>
   </ion-toolbar>
 </ion-header>
 
@@ -18,33 +30,133 @@
     </ion-toolbar>
   </ion-header>
 
-  <!-- Grid de Imágenes -->
-  <div class="gallery-grid" *ngIf="photos.length > 0">
-    <ion-card *ngFor="let photo of photos" class="photo-card" (click)="openPhotoDetail(photo)">
-      <img [src]="photo.webviewPath" [alt]="photo.title" />
-      <ion-card-content>
-        <h3>{{ photo.title }}</h3>
-        <p class="photo-date">{{ photo.date | date:'short' }}</p>
-        <div class="tags">
-          <ion-chip *ngFor="let tag of photo.tags" color="primary" outline="true">
-            <ion-label>{{ tag }}</ion-label>
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="refreshData($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Desliza para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="circular"></ion-spinner>
+    <p>Cargando medios...</p>
+  </div>
+
+  <!-- Grid de Medios -->
+  <div *ngIf="!isLoading && filteredMedias.length > 0" class="media-grid">
+    <ion-card 
+      *ngFor="let media of filteredMedias; trackBy: trackByMediaId" 
+      class="media-card"
+      (click)="openMediaDetail(media)"
+      button="true">
+      
+      <!-- Imagen/Video -->
+      <div class="media-container">
+        <img 
+          [src]="media.uri" 
+          [alt]="media.filename || 'Media'"
+          loading="lazy"
+          class="media-image"
+          (error)="$event.target.src='assets/placeholder.png'" />
+        
+        <!-- Indicador de tipo -->
+        <ion-chip *ngIf="media.type === 'video'" class="media-type-indicator" color="dark">
+          <ion-icon name="videocam"></ion-icon>
+          <ion-label>Video</ion-label>
+        </ion-chip>
+        
+        <!-- Indicador de etiquetas -->
+        <ion-badge *ngIf="media.tags.length > 0" class="tags-count" color="primary">
+          {{ media.tags.length }}
+        </ion-badge>
+      </div>
+      
+      <!-- Información del medio -->
+      <ion-card-content class="media-info">
+        <h3 class="media-title">{{ media.filename || 'Sin nombre' }}</h3>
+        <p class="media-date">{{ media.dateCreated | date:'short' }}</p>
+        
+        <!-- Etiquetas -->
+        <div class="tags-container" *ngIf="media.tags.length > 0">
+          <ion-chip 
+            *ngFor="let tag of media.tags.slice(0, 3)" 
+            [style.--background]="tag.color || '#3880ff'"
+            class="media-tag"
+            size="small">
+            <ion-label>{{ tag.nombre }}</ion-label>
           </ion-chip>
+          <ion-chip 
+            *ngIf="media.tags.length > 3" 
+            color="medium" 
+            size="small"
+            class="more-tags">
+            <ion-label>+{{ media.tags.length - 3 }}</ion-label>
+          </ion-chip>
+        </div>
+        
+        <!-- Sin etiquetas -->
+        <div *ngIf="media.tags.length === 0" class="no-tags">
+          <ion-text color="medium">
+            <small>Sin etiquetas</small>
+          </ion-text>
         </div>
       </ion-card-content>
     </ion-card>
   </div>
 
   <!-- Estado Vacío -->
-  <div class="empty-state" *ngIf="photos.length === 0">
-    <ion-icon name="images-outline"></ion-icon>
-    <h2>No hay fotos aún</h2>
-    <p>Toca el botón de cámara para comenzar</p>
+  <div *ngIf="!isLoading && filteredMedias.length === 0" class="empty-state">
+    <ion-icon name="images-outline" class="empty-icon"></ion-icon>
+    <h2>{{ hasActiveFilters ? 'No se encontraron medios' : 'No hay medios aún' }}</h2>
+    <p *ngIf="!hasActiveFilters">Toca el botón + para agregar tu primera foto</p>
+    <p *ngIf="hasActiveFilters">Intenta cambiar los filtros o agregar nuevos medios</p>
+    
+    <ion-button 
+      *ngIf="hasActiveFilters" 
+      (click)="clearFilters()" 
+      fill="outline"
+      color="primary">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Limpiar Filtros
+    </ion-button>
+    
+    <ion-button 
+      *ngIf="!hasActiveFilters"
+      (click)="showCameraOptions()" 
+      fill="solid"
+      color="primary">
+      <ion-icon name="camera" slot="start"></ion-icon>
+      Agregar Foto
+    </ion-button>
   </div>
 
-  <!-- Botón de Acción Flotante (FAB) -->
+  <!-- Estadísticas en la parte inferior -->
+  <div *ngIf="!isLoading && filteredMedias.length > 0" class="stats-footer">
+    <ion-text color="medium">
+      <small>
+        {{ filteredMedias.length }} {{ filteredMedias.length === 1 ? 'medio' : 'medios' }}
+        {{ hasActiveFilters ? 'filtrado' + (filteredMedias.length === 1 ? '' : 's') : '' }}
+      </small>
+    </ion-text>
+  </div>
+
+  <!-- Botón Flotante -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button color="success" (click)="capturePhoto()">
-      <ion-icon name="camera"></ion-icon>
+    <ion-fab-button (click)="showCameraOptions()" color="primary">
+      <ion-icon name="add"></ion-icon>
     </ion-fab-button>
+    
+    <ion-fab-list side="top">
+      <ion-fab-button (click)="capturePhoto()" color="success">
+        <ion-icon name="camera"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button (click)="pickFromGallery()" color="secondary">
+        <ion-icon name="images"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
   </ion-fab>
 </ion-content>
